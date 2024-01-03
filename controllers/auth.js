@@ -2,7 +2,10 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
 var jwt = require("jsonwebtoken");
-const JWT_SECRET = "management";
+const dotenv = require('dotenv');
+dotenv.config();
+const JWT_SECRET = process.env.JWT_SECRET;
+// const JWT_SECRET = "management";
 const {
   getTransport,
   getToken,
