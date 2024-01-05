@@ -4,7 +4,7 @@ const { body, validationResult } = require("express-validator");
 var fetchuser = require("../middleware/fetchuser");
 const { getClients } = require("../controllers/client")
 
-router.post("/get-clients", fetchuser, async (req, res) => {
+router.get("/get-clients", fetchuser, async (req, res) => {
     getClients(req, res)
    });
    module.exports = router;
