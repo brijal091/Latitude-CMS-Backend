@@ -1,45 +1,51 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 const { Schema } = mongoose;
+var jwt = require("jsonwebtoken");
 
-const UserSchema = new Schema(
+const userSchema = new Schema(
   {
-    userName: {
+    name: {
       type: String,
       required: true,
     },
     email: {
       type: String,
       required: true,
-      unique: true,
     },
     password: {
       type: String,
       required: true,
     },
+    subdomain: {
+      type:String,
+      lowercase :true,
+      trim :true,
+    },
     profile:{
       type: String
     },
-    isAdmin:{
-      type : Boolean ,
-      default: false
-    },
-    projectCategory:{
-      type: String,
-      enum: {
-        values: ['PROPERTY', 'HOTEL', 'E-COMMERCE'],
-        message: 'Please select category from the given list.'
-      }
-    },
-    isClient:{
-      type: Boolean,
-      default: false
-    }
   },
   {
     timestamps: true,
   }
 );
 
-const User = mongoose.model("user", UserSchema);
-//   User.createIndexes();
+userSchema.pre('save', async function (next) {
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 12);
+  }
+  next();
+});
+
+// userSchema.methods.generateToken = async function(){
+//   try {
+//     let token = jwt.sign({_id: this._id}, process.env.JWT_SECRET)
+//     return token;
+//   } catch (error) {
+//     console.log(error)
+//   }
+// }
+
+const User = mongoose.model("user", userSchema);
 module.exports = User;

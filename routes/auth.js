@@ -7,6 +7,7 @@ const {
   upload,
   handleMulterError,
 } = require("../services/imageHandler/multer");
+
 // Route : 1 Create User
 router.post(
   "/createuser",

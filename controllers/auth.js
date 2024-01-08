@@ -2,10 +2,8 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
 var jwt = require("jsonwebtoken");
-const dotenv = require('dotenv');
-dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET;
-// const JWT_SECRET = "management";
+
 const {
   getTransport,
   getToken,
@@ -13,25 +11,21 @@ const {
 } = require("../services/mailHandler/mailHandler");
 
 const createUser = async (req, res) => {
-  const { email, userName, isAdmin, isClient, projectCategory } = req.body;
+  const { name, email, password, cPassword } = req.body;
+  const subdomain = req.headers.host;
+  if(password !== cPassword) return res.status(400).json({error: "Password and confirm password does not match"})
   try {
-    // check weather the user is already in database
-    let user = await User.findOne({ email: email });
+    let user = await User.findOne({ email,  subdomain});
     if (user) {
       return res
         .status(400)
         .json({ error: "User with this email already exist." });
     }
-    const salt = await bcrypt.genSalt(10);
-    const secPass = await bcrypt.hash(req.body.password, salt);
-    // Creating new user
     user = await User.create({
-      userName,
+      name,
       email,
-      password: secPass,
-      isAdmin,
-      isClient,
-      ...(isClient ? { projectCategory } : {}),
+      password,
+      subdomain,
       ...(req.file && { profile: req.file.filename }),
     });
     const data = {
@@ -40,24 +34,6 @@ const createUser = async (req, res) => {
       },
     };
     const jwtData = jwt.sign(data, JWT_SECRET);
-    if (isClient) {
-      let credentials = {
-        email,
-        password: req.body.password,
-      };
-      let mailRequest = getMailOptions(email, credentials);
-      //Send mail
-      return getTransport().sendMail(mailRequest, (error) => {
-        if (error) {
-          res.status(500).send("Can't send email.");
-        } else {
-          res.status(200);
-          res.send({
-            message: `Credentials sent to ${email}`,
-          });
-        }
-      });
-    }
     res.json(jwtData);
   } catch (error) {
     console.error(error.message);
@@ -67,8 +43,9 @@ const createUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
+  const subdomain = req.headers.host;
   try {
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ email, subdomain });
     if (!user) {
       return res
         .status(400)
@@ -109,3 +86,23 @@ module.exports = {
   loginUser,
   getUser,
 };
+
+
+// if (isClient) {
+//   let credentials = {
+//     email,
+//     password: req.body.password,
+//   };
+//   let mailRequest = getMailOptions(email, credentials);
+//   //Send mail
+//   return getTransport().sendMail(mailRequest, (error) => {
+//     if (error) {
+//       res.status(500).send("Can't send email.");
+//     } else {
+//       res.status(200);
+//       res.send({
+//         message: `Credentials sent to ${email}`,
+//       });
+//     }
+//   });
+// }
