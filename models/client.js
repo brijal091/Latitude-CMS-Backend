@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
+const bcrypt = require("bcrypt");
 
-const ClientSchema = new Schema(
+const clientSchema = new Schema(
   {
     name: {
       type: String,
@@ -25,6 +26,7 @@ const ClientSchema = new Schema(
       lowercase: true,
       trim:true,
       unique:true,
+      required: true,
       match: [
         /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/,
         'Invalid subdomain format. Subdomain must start and end with a lowercase letter or number, with optional hyphens in between.',
@@ -45,6 +47,11 @@ const ClientSchema = new Schema(
     timestamps: true,
   }
 );
-
-const Client = mongoose.model("client", ClientSchema);
+clientSchema.pre('save', async function (next) {
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 12);
+  }
+  next();
+});
+const Client = mongoose.model("client", clientSchema);
 module.exports = Client;

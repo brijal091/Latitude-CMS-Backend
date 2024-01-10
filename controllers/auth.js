@@ -1,6 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
+const Client = require("../models/Client");
 var jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -13,9 +14,12 @@ const {
 const createUser = async (req, res) => {
   const { name, email, password, cPassword } = req.body;
   const subdomain = req.headers.host;
-  if(password !== cPassword) return res.status(400).json({error: "Password and confirm password does not match"})
+  if (password !== cPassword)
+    return res
+      .status(400)
+      .json({ error: "Password and confirm password does not match" });
   try {
-    let user = await User.findOne({ email,  subdomain});
+    let user = await User.findOne({ email, subdomain });
     if (user) {
       return res
         .status(400)
@@ -71,7 +75,8 @@ const loginUser = async (req, res) => {
 
 const getUser = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.params.id;
+    console.log(userId);
     // To Exclude the password field here in response we have used -password here at the end
     const user = await User.findById(userId).select("-password");
     res.send(user);
@@ -81,28 +86,87 @@ const getUser = async (req, res) => {
   }
 };
 
+// ========= CLIENT AUTH =================
+
+const createClient = async (req, res) => {
+  const { name, email, password, isAdmin, subdomain, projectCategory } =
+    req.body;
+  // Checking for existing client with the same Subdomain or Project Category
+  try {
+    let client = await Client.findOne({ email });
+    if (client)
+      return res.status(400).json({
+        error: "Client already exist Please try again with another email.",
+      });
+
+    client = await Client.create({
+      name,
+      email,
+      password,
+      isAdmin,
+      subdomain,
+      projectCategory,
+      ...(req.file && { profile: req.file.filename }),
+    });
+    //Send mail
+    let mailRequest = getMailOptions(email, {
+      email,
+      password: req.body.password,
+    });
+    return getTransport().sendMail(mailRequest, (error) => {
+      if (error) {
+        res.status(500).send("Can't send email.");
+      } else {
+        res.status(200);
+        res.send({
+          message: `Credentials sent to ${email}`,
+        });
+      }
+    });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Something went Wrong");
+  }
+};
+
+const loginClient = async (req, res) => {
+  const { email, password } = req.body;
+  const client = await Client.findOne({ email });
+  if (!client) {
+    return res
+      .status(400)
+      .json({ error: "User with this email does not exist" });
+  }
+  const passCompar = await bcrypt.compare(password, client.password);
+  if (!passCompar) {
+    return res.status(400).json({ error: "Email or Password is incorrect" });
+  }
+  const data = {
+    client: {
+      id: client.id,
+    },
+  };
+  const jwtData = jwt.sign(data, JWT_SECRET);
+  res.json({ jwtData, isAdmin: client.isAdmin});
+};
+
+const getClient = async (req, res) => {
+  const { id } = req.params.id;
+  const client = await Client.findById(id);
+  if (!client) {
+    return res
+      .status(400)
+      .json({ error: "Client does not exist" });
+  }
+  res.send(client);
+};
+
 module.exports = {
   createUser,
   loginUser,
   getUser,
+
+  createClient,
+  loginClient,
+  getClient
 };
-
-
-// if (isClient) {
-//   let credentials = {
-//     email,
-//     password: req.body.password,
-//   };
-//   let mailRequest = getMailOptions(email, credentials);
-//   //Send mail
-//   return getTransport().sendMail(mailRequest, (error) => {
-//     if (error) {
-//       res.status(500).send("Can't send email.");
-//     } else {
-//       res.status(200);
-//       res.send({
-//         message: `Credentials sent to ${email}`,
-//       });
-//     }
-//   });
-// }
