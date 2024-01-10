@@ -1,7 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
-const Subdomain = require("../models/Subdomains")
+const Subdomain = require("../models/Subdomains");
 const Client = require("../models/Client");
 var jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -99,12 +99,14 @@ const createClient = async (req, res) => {
       return res.status(400).json({
         error: "Client already exist Please try again with another email.",
       });
-    
-    console.log("=============================");
-    console.log("subdomain is available or not", subdomain);
-    let subdomainIsAvailable = await Subdomain.findOne({domainName: subdomain});
-    console.log("subdomain is available or not", subdomainIsAvailable);
-    if(subdomainIsAvailable) return res.status(400).json({error: "This domain is not available, please try another one."})
+
+    let subdomainIsAvailable = await Subdomain.findOne({
+      domainName: subdomain,
+    });
+    if (subdomainIsAvailable)
+      return res.status(400).json({
+        error: "This domain is not available, please try another one.",
+      });
 
     client = await Client.create({
       name,
@@ -115,7 +117,8 @@ const createClient = async (req, res) => {
       projectCategory,
       ...(req.file && { profile: req.file.filename }),
     });
-    new Subdomain({ domainName: subdomain, client: client._id }).save();
+    if (client)
+      new Subdomain({ domainName: subdomain, client: client._id }).save();
     //Send mail
     let mailRequest = getMailOptions(email, {
       email,
@@ -155,16 +158,14 @@ const loginClient = async (req, res) => {
     },
   };
   const jwtData = jwt.sign(data, JWT_SECRET);
-  res.json({ jwtData, isAdmin: client.isAdmin});
+  res.json({ jwtData, isAdmin: client.isAdmin });
 };
 
 const getClient = async (req, res) => {
   const { id } = req.params.id;
   const client = await Client.findById(id);
   if (!client) {
-    return res
-      .status(400)
-      .json({ error: "Client does not exist" });
+    return res.status(400).json({ error: "Client does not exist" });
   }
   res.send(client);
 };
@@ -176,5 +177,5 @@ module.exports = {
 
   createClient,
   loginClient,
-  getClient
+  getClient,
 };

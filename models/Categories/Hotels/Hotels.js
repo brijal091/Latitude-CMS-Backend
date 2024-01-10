@@ -22,6 +22,10 @@ const HotelSchema = new mongoose.Schema({
     type: [String],
     required: true,
   },
+  subDomain:{
+    type: String,
+    required: true
+  },
   email: {
     type: String,
     required: true,
