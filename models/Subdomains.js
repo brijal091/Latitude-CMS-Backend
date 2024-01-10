@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const userSchema = new Schema(
+const subDomainSchema = new Schema(
   {
     domainName: {
       type: String,
@@ -9,11 +9,11 @@ const userSchema = new Schema(
     },
     isActive:{
         type : Boolean ,
-        default : false
+        default : true
     },
     client:{
         type : Schema.Types.ObjectId,
-        ref : "Client"
+        ref : "client"
     }
   },
   {
@@ -21,5 +21,5 @@ const userSchema = new Schema(
   }
 );
 
-const User = mongoose.model("user", userSchema);
-module.exports = User;
+const subdomain = mongoose.model("subdomain", subDomainSchema);
+module.exports = subdomain;
