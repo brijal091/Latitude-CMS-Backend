@@ -1,6 +1,6 @@
 var jwt = require('jsonwebtoken');
 const JWT_SECRET = "management"
-const Client = require("../models/Client")
+const Client = require("../models/client")
 
 clientoradmin = async (req,res,next) => {
     const token = req.header('auth-token');

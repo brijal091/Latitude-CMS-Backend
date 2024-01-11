@@ -4,7 +4,7 @@ const { body, validationResult } = require("express-validator");
 var fetchuser = require("../middleware/fetchuser");
 var userisadmin = require("../middleware/userisadmin");
 var clientoradmin = require("../middleware/clientoradmin");
-const Client = require("../models/Client")
+const Client = require("../models/client")
 const { createUser, getUser, loginUser } = require("../controllers/auth");
 const { createClient, getClients, getClient, loginClient } = require("../controllers/auth");
 const {

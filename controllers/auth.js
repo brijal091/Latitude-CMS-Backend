@@ -2,7 +2,7 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
 const Subdomain = require("../models/Subdomains");
-const Client = require("../models/Client");
+const Client = require("../models/client");
 var jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET;
 
