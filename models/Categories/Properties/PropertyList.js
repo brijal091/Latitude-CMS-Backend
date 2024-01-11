@@ -44,13 +44,17 @@ const PropertySchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  area: {
+  size: {
     type: Number,
     required: true
   },
   type:{
     type: String, // "rent" or "sale"
     enum: ["Sale", "Rent"],
+  },
+  configurations:{
+    type: String, // "rent" or "sale"
+    // enum: ["Sale", "Rent"],
   },
   price: {
     type: Number,

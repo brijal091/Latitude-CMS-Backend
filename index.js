@@ -14,15 +14,14 @@ app.use(express.json());
 
 // Available Routes
 app.get("/", (req, res) => {
-  console.log(`Server is running on http://localhost:${port}`);
-  // You can also send a response to the client if needed
-  res.send("Server is Connected");
+  console.log(`Server is running ${port}`);
+  res.send("Server is running");
 });
 
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/checkdomain", require("./routes/subdomain"));
 // app.use("/api/hotel", require("./routes/Hotel/hotels"))
-// app.use("/api/property", require("./routes/Property/property"))
+app.use("/api/property", require("./routes/Property/property"))
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
