@@ -15,7 +15,7 @@ app.use(express.json());
 // Available Routes
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/checkdomain", require("./routes/subdomain"));
-app.use("/api/hotel", require("./routes/Hotel/hotels"))
+// app.use("/api/hotel", require("./routes/Hotel/hotels"))
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
